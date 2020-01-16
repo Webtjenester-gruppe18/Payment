@@ -1,4 +1,4 @@
-package ws18.controllers;
+package dtu.ws.controllers;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

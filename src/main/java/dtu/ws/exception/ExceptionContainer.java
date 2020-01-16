@@ -1,4 +1,4 @@
-package ws18.exception;
+package dtu.ws.exception;
 
 public class ExceptionContainer {
 

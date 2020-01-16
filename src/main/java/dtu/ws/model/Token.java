@@ -1,4 +1,4 @@
-package ws18.model;
+package dtu.ws.model;
 
 import java.util.UUID;
 

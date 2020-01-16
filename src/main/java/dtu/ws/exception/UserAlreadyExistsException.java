@@ -1,4 +1,4 @@
-package ws18.exception;
+package dtu.ws.exception;
 
 public class UserAlreadyExistsException extends Exception {
     public UserAlreadyExistsException(String message) {

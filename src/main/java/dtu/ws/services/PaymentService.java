@@ -1,9 +1,11 @@
-package ws18.services;
+package dtu.ws.services;
+
+import dtu.ws.exception.NotEnoughMoneyException;
+import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankServiceException_Exception;
-import ws18.exception.NotEnoughMoneyException;
-import ws18.exception.TokenValidationException;
-import ws18.model.Token;
+import dtu.ws.model.DTUPayTransaction;
+import dtu.ws.model.Token;
 
 import java.math.BigDecimal;
 import java.util.Date;
