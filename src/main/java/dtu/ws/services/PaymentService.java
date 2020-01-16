@@ -1,38 +1,52 @@
 package dtu.ws.services;
 
+import dtu.ws.HTTPClients.TokenManagerHTTPClient;
+import dtu.ws.HTTPClients.UserManagerHTTPClient;
+import dtu.ws.control.ControlReg;
+import dtu.ws.database.ITransactionDatabase;
 import dtu.ws.exception.NotEnoughMoneyException;
 import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
+import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
+import dtu.ws.model.Customer;
 import dtu.ws.model.DTUPayTransaction;
+import dtu.ws.model.Merchant;
 import dtu.ws.model.Token;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class PaymentService implements IPaymentService {
 
-    private IBankService bankService = ControlReg.getBankService();
-    private ITokenManager tokenManager = ControlReg.getTokenManager();
-    private IReportingService reportingService = ControlReg.getReportingService();
-    private IUserService userService = ControlReg.getUserService();
+    private BankService bankService = ControlReg.getFastMoneyBankService();
+    private ITransactionDatabase transactionDatabase = ControlReg.getTransactionDatabase();
+    private TokenManagerHTTPClient tokenManagerHTTPClient = ControlReg.getTokenManagerHTTPClient();
+    private UserManagerHTTPClient userManagerHTTPClient = ControlReg.getUserManagerHTTPClient();
 
     @Override
     public boolean performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
+
         Account customerAccount = this.bankService.getAccount(fromAccountNumber);
-        this.tokenManager.validateToken(customerAccount.getUser().getCprNumber(), token);
+        boolean tokenValid = this.tokenManagerHTTPClient.validateToken(customerAccount.getUser().getCprNumber(), token);
 
-        if (isPaymentPossible(customerAccount, amount)) {
-            this.bankService.transferMoneyFromTo(fromAccountNumber, toAccountNumber, amount, description);
-            this.tokenManager.useToken(token);
+        if (tokenValid) {
+            if (isPaymentPossible(customerAccount, amount)) {
+                this.bankService.transferMoneyFromTo(fromAccountNumber, toAccountNumber, amount, description);
+                this.tokenManagerHTTPClient.useToken(token);
 
-            DTUPayTransaction transaction = new DTUPayTransaction(amount, fromAccountNumber, toAccountNumber, description, new Date().getTime(), token);
-            this.reportingService.saveTransaction(transaction);
+                DTUPayTransaction transaction = new DTUPayTransaction(amount, fromAccountNumber, toAccountNumber, description, new Date().getTime(), token);
+                this.saveTransaction(transaction);
 
-            this.userService.addTransactionToUserByAccountId(toAccountNumber, transaction.getTransactionId());
-            this.userService.addTransactionToUserByAccountId(fromAccountNumber, transaction.getTransactionId());
+                this.userManagerHTTPClient.addTransactionToUserByAccountId(toAccountNumber, transaction.getTransactionId());
+                this.userManagerHTTPClient.addTransactionToUserByAccountId(fromAccountNumber, transaction.getTransactionId());
 
-            return true;
+                return true;
+            }
+        }
+        else {
+            throw new TokenValidationException("The token is invalid.");
         }
 
         return false;
@@ -52,12 +66,50 @@ public class PaymentService implements IPaymentService {
                         new Date().getTime(),
                         null);
 
-        this.reportingService.saveTransaction(dtuPayTransaction);
+        this.saveTransaction(dtuPayTransaction);
 
-        this.userService.addTransactionToUserByAccountId(transaction.getDebtor(), transaction.getTransactionId());
-        this.userService.addTransactionToUserByAccountId(transaction.getCreditor(), transaction.getTransactionId());
+        this.userManagerHTTPClient.addTransactionToUserByAccountId(transaction.getDebtor(), transaction.getTransactionId());
+        this.userManagerHTTPClient.addTransactionToUserByAccountId(transaction.getCreditor(), transaction.getTransactionId());
 
         return true;
+    }
+
+    @Override
+    public DTUPayTransaction getTransactionById(String transactionId) {
+        return this.transactionDatabase.getTransactionById(transactionId);
+    }
+
+    @Override
+    public ArrayList<DTUPayTransaction> getTransactionsByCustomerCpr(String cpr) {
+
+        ArrayList<DTUPayTransaction> result = new ArrayList<>();
+
+        Customer customer = this.userManagerHTTPClient.getCustomerByCpr(cpr);
+
+        for (String transactionId : customer.getTransactionIds()) {
+            result.add(this.getTransactionById(transactionId));
+        }
+
+        return result;
+    }
+
+    @Override
+    public ArrayList<DTUPayTransaction> getTransactionsByMerchantCpr(String cpr) {
+
+        ArrayList<DTUPayTransaction> result = new ArrayList<>();
+
+        Merchant merchant = this.userManagerHTTPClient.getMerchantByCpr(cpr);
+
+        for (String transactionId : merchant.getTransactionIds()) {
+            result.add(this.getTransactionById(transactionId));
+        }
+
+        return result;
+    }
+
+    @Override
+    public String saveTransaction(DTUPayTransaction transaction) {
+        return this.transactionDatabase.saveTransaction(transaction);
     }
 
     private boolean isPaymentPossible(Account account, BigDecimal requestedAmount) throws NotEnoughMoneyException {

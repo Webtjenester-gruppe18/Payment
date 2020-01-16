@@ -1,8 +1,14 @@
 package dtu.ws.model;
 
+import lombok.Getter;
+import lombok.Setter;
+
+import java.io.Serializable;
 import java.util.UUID;
 
-public class Token {
+@Getter
+@Setter
+public class Token implements Serializable {
 
     private String value;
     private String customerCpr;
