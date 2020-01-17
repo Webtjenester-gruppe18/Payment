@@ -15,37 +15,47 @@ import dtu.ws.model.Merchant;
 import dtu.ws.model.Token;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Scanner;
 
-@Service
+
+
 public class PaymentService implements IPaymentService {
 
     private BankService bankService; // = ControlReg.getFastMoneyBankService();
     private ITransactionDatabase transactionDatabase; // = ControlReg.getTransactionDatabase();
     private TokenManagerHTTPClient tokenManagerHTTPClient; // = ControlReg.getTokenManagerHTTPClient();
     private UserManagerHTTPClient userManagerHTTPClient; // = ControlReg.getUserManagerHTTPClient();
-
-    @Autowired
     private RabbitTemplate rabbitTemplate;
 
+    public PaymentService (RabbitTemplate rabbitTemplate){
+        this.rabbitTemplate = rabbitTemplate;
+    }
 
     @Override
     public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
         try {
 
+            while(true){
+                System.out.print("Enter a string : ");
+                Scanner scanner = new Scanner(System. in);
+                String inputString = scanner. nextLine();
+                rabbitTemplate.convertAndSend(PaymentApplication.queueName,
+                        inputString);
+                if (inputString.equals("exit")){
+                    break;
+                }
+            }
 
-            rabbitTemplate.convertAndSend(PaymentApplication.queueName,
-                    "emil");
 
 
-        }
-        catch (AmqpConnectException e) {
+        } catch (AmqpConnectException e) {
             // ignore - rabbit is not running
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

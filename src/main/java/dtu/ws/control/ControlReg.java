@@ -8,7 +8,6 @@ import dtu.ws.database.InMemoryTransactionDatabase;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.services.IPaymentService;
-import dtu.ws.services.PaymentService;
 
 public class ControlReg {
     private static BankService bankService;
@@ -38,10 +37,10 @@ public class ControlReg {
         return userManagerHTTPClient;
     }
 
-    public static IPaymentService getPaymentService() {
+  /*  public static IPaymentService getPaymentService() {
         if (paymentService == null) paymentService = new PaymentService();
         return paymentService;
-    }
+    }*/
 
     public static ITransactionDatabase getTransactionDatabase() {
         if (transactionDatabase == null) transactionDatabase = new InMemoryTransactionDatabase();
