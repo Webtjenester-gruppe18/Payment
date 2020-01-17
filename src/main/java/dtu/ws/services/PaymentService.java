@@ -1,25 +1,20 @@
 package dtu.ws.services;
 
-import dtu.ws.HTTPClients.TokenManagerHTTPClient;
-import dtu.ws.HTTPClients.UserManagerHTTPClient;
-import dtu.ws.PaymentApplication;
 import dtu.ws.database.ITransactionDatabase;
 import dtu.ws.exception.NotEnoughMoneyException;
 import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
-import dtu.ws.model.Customer;
 import dtu.ws.model.DTUPayTransaction;
-import dtu.ws.model.Merchant;
 import dtu.ws.model.Token;
+import dtu.ws.rabbitmq.RabbitMQValues;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Scanner;
 
 
 
@@ -27,8 +22,6 @@ public class PaymentService implements IPaymentService {
 
     private BankService bankService; // = ControlReg.getFastMoneyBankService();
     private ITransactionDatabase transactionDatabase; // = ControlReg.getTransactionDatabase();
-    private TokenManagerHTTPClient tokenManagerHTTPClient; // = ControlReg.getTokenManagerHTTPClient();
-    private UserManagerHTTPClient userManagerHTTPClient; // = ControlReg.getUserManagerHTTPClient();
     private RabbitTemplate rabbitTemplate;
 
     public PaymentService (RabbitTemplate rabbitTemplate){
@@ -39,18 +32,9 @@ public class PaymentService implements IPaymentService {
     public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
         try {
 
-            while(true){
-                System.out.print("Enter a string : ");
-                Scanner scanner = new Scanner(System. in);
-                String inputString = scanner. nextLine();
-                rabbitTemplate.convertAndSend(PaymentApplication.queueName,
-                        inputString);
-                if (inputString.equals("exit")){
-                    break;
-                }
-            }
-
-
+                System.out.println("Hej fra Paymentservice " + fromAccountNumber);
+                rabbitTemplate.convertAndSend(RabbitMQValues.topicExchangeName,"token",
+                        fromAccountNumber);
 
         } catch (AmqpConnectException e) {
             // ignore - rabbit is not running
@@ -74,10 +58,6 @@ public class PaymentService implements IPaymentService {
                         null);
 
         this.saveTransaction(dtuPayTransaction);
-
-        this.userManagerHTTPClient.addTransactionToUserByAccountId(transaction.getDebtor(), transaction.getTransactionId());
-        this.userManagerHTTPClient.addTransactionToUserByAccountId(transaction.getCreditor(), transaction.getTransactionId());
-
         return true;
     }
 
@@ -90,13 +70,12 @@ public class PaymentService implements IPaymentService {
     public ArrayList<DTUPayTransaction> getTransactionsByCustomerCpr(String cpr) {
 
         ArrayList<DTUPayTransaction> result = new ArrayList<>();
-
+/*
         Customer customer = this.userManagerHTTPClient.getCustomerByCpr(cpr);
 
         for (String transactionId : customer.getTransactionIds()) {
             result.add(this.getTransactionById(transactionId));
-        }
-
+        }*/
         return result;
     }
 
@@ -105,11 +84,11 @@ public class PaymentService implements IPaymentService {
 
         ArrayList<DTUPayTransaction> result = new ArrayList<>();
 
-        Merchant merchant = this.userManagerHTTPClient.getMerchantByCpr(cpr);
+     /*   Merchant merchant = this.userManagerHTTPClient.getMerchantByCpr(cpr);
 
         for (String transactionId : merchant.getTransactionIds()) {
             result.add(this.getTransactionById(transactionId));
-        }
+        }*/
 
         return result;
     }
