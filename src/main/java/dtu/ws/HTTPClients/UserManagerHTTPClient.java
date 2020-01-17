@@ -21,7 +21,7 @@ public class UserManagerHTTPClient {
         TransactionToUserByAccountId obj = new TransactionToUserByAccountId(accountId, transactionId);
 
         Response response =
-                w.path("transactionId/")
+                w.path("transactionId")
                         .request()
                         .put(Entity.entity(obj, MediaType.APPLICATION_JSON_TYPE));
 
