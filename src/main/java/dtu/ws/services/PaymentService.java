@@ -2,7 +2,7 @@ package dtu.ws.services;
 
 import dtu.ws.HTTPClients.TokenManagerHTTPClient;
 import dtu.ws.HTTPClients.UserManagerHTTPClient;
-import dtu.ws.control.ControlReg;
+import dtu.ws.PaymentApplication;
 import dtu.ws.database.ITransactionDatabase;
 import dtu.ws.exception.NotEnoughMoneyException;
 import dtu.ws.exception.TokenValidationException;
@@ -13,43 +13,40 @@ import dtu.ws.model.Customer;
 import dtu.ws.model.DTUPayTransaction;
 import dtu.ws.model.Merchant;
 import dtu.ws.model.Token;
+import org.springframework.amqp.AmqpConnectException;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
+@Service
 public class PaymentService implements IPaymentService {
 
-    private BankService bankService = ControlReg.getFastMoneyBankService();
-    private ITransactionDatabase transactionDatabase = ControlReg.getTransactionDatabase();
-    private TokenManagerHTTPClient tokenManagerHTTPClient = ControlReg.getTokenManagerHTTPClient();
-    private UserManagerHTTPClient userManagerHTTPClient = ControlReg.getUserManagerHTTPClient();
+    private BankService bankService; // = ControlReg.getFastMoneyBankService();
+    private ITransactionDatabase transactionDatabase; // = ControlReg.getTransactionDatabase();
+    private TokenManagerHTTPClient tokenManagerHTTPClient; // = ControlReg.getTokenManagerHTTPClient();
+    private UserManagerHTTPClient userManagerHTTPClient; // = ControlReg.getUserManagerHTTPClient();
+
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
 
     @Override
-    public boolean performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
+    public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
+        try {
 
-        Account customerAccount = this.bankService.getAccount(fromAccountNumber);
-        boolean tokenValid = this.tokenManagerHTTPClient.validateToken(customerAccount.getUser().getCprNumber(), token);
 
-        if (tokenValid) {
-            if (isPaymentPossible(customerAccount, amount)) {
-                this.bankService.transferMoneyFromTo(fromAccountNumber, toAccountNumber, amount, description);
-                this.tokenManagerHTTPClient.useToken(token);
+            rabbitTemplate.convertAndSend(PaymentApplication.queueName,
+                    "emil");
 
-                DTUPayTransaction transaction = new DTUPayTransaction(amount, fromAccountNumber, toAccountNumber, description, new Date().getTime(), token);
-                this.saveTransaction(transaction);
 
-                this.userManagerHTTPClient.addTransactionToUserByAccountId(toAccountNumber, transaction.getTransactionId());
-                this.userManagerHTTPClient.addTransactionToUserByAccountId(fromAccountNumber, transaction.getTransactionId());
-
-                return true;
-            }
         }
-        else {
-            throw new TokenValidationException("The token is invalid.");
+        catch (AmqpConnectException e) {
+            // ignore - rabbit is not running
         }
-
-        return false;
     }
 
     @Override

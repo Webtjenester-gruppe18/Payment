@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public interface IPaymentService {
 
-    boolean performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws dtu.ws.fastmoney.BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException;
+    void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws dtu.ws.fastmoney.BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException;
     boolean performRefund(DTUPayTransaction transaction) throws dtu.ws.fastmoney.BankServiceException_Exception;
     DTUPayTransaction getTransactionById(String transactionId);
     ArrayList<DTUPayTransaction> getTransactionsByCustomerCpr(String cpr);
