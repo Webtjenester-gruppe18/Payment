@@ -13,6 +13,7 @@ import dtu.ws.model.Customer;
 import dtu.ws.model.DTUPayTransaction;
 import dtu.ws.model.Merchant;
 import dtu.ws.model.Token;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -20,14 +21,23 @@ import java.util.Date;
 
 public class PaymentService implements IPaymentService {
 
-    private BankService bankService = ControlReg.getFastMoneyBankService();
-    private ITransactionDatabase transactionDatabase = ControlReg.getTransactionDatabase();
-    private TokenManagerHTTPClient tokenManagerHTTPClient = ControlReg.getTokenManagerHTTPClient();
-    private UserManagerHTTPClient userManagerHTTPClient = ControlReg.getUserManagerHTTPClient();
+    private BankService bankService;
+    private ITransactionDatabase transactionDatabase;
+    private TokenManagerHTTPClient tokenManagerHTTPClient;
+    private UserManagerHTTPClient userManagerHTTPClient;
+
+    public PaymentService(BankService bankService,
+                          ITransactionDatabase transactionDatabase,
+                          TokenManagerHTTPClient tokenManagerHTTPClient,
+                          UserManagerHTTPClient userManagerHTTPClient) {
+        this.bankService = bankService;
+        this.transactionDatabase = transactionDatabase;
+        this.tokenManagerHTTPClient = tokenManagerHTTPClient;
+        this.userManagerHTTPClient = userManagerHTTPClient;
+    }
 
     @Override
     public boolean performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
-
         Account customerAccount = this.bankService.getAccount(fromAccountNumber);
         boolean tokenValid = this.tokenManagerHTTPClient.validateToken(customerAccount.getUser().getCprNumber(), token);
 

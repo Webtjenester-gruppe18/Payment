@@ -1,12 +1,15 @@
 package dtu.ws.HTTPClients;
 
 import dtu.ws.model.Token;
+import org.springframework.stereotype.Component;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
+@Component
 public class TokenManagerHTTPClient {
 
     Client c = ClientBuilder.newClient();
@@ -29,4 +32,6 @@ public class TokenManagerHTTPClient {
                 .request()
                 .put(Entity.entity(token, MediaType.APPLICATION_JSON_TYPE), Token.class);
     }
+
+
 }

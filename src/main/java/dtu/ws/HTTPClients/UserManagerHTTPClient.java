@@ -3,6 +3,7 @@ package dtu.ws.HTTPClients;
 import dtu.ws.model.Customer;
 import dtu.ws.model.Merchant;
 import dtu.ws.model.TransactionToUserByAccountId;
+import org.springframework.stereotype.Component;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -11,6 +12,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+@Component
 public class UserManagerHTTPClient {
 
     Client c = ClientBuilder.newClient();
@@ -29,7 +31,6 @@ public class UserManagerHTTPClient {
     }
 
     public Customer getCustomerByCpr(String cpr) {
-
 //        Response response =
 //                w.path("customer/")
 //                .path(cpr)
@@ -52,5 +53,13 @@ public class UserManagerHTTPClient {
                 .get(Merchant.class);
 
         return merchant;
+    }
+
+    public String registerCustomer(Customer customer) {
+        String response = w.path("customer")
+                .request()
+                .post(Entity.entity(customer, MediaType.APPLICATION_JSON_TYPE), String.class);
+
+        return response;
     }
 }

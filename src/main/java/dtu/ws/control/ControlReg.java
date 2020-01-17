@@ -39,7 +39,13 @@ public class ControlReg {
     }
 
     public static IPaymentService getPaymentService() {
-        if (paymentService == null) paymentService = new PaymentService();
+        if (paymentService == null) {
+            paymentService = new PaymentService(
+                getFastMoneyBankService(),
+                getTransactionDatabase(),
+                new TokenManagerHTTPClient(),
+                new UserManagerHTTPClient());
+        }
         return paymentService;
     }
 

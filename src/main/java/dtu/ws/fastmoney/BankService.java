@@ -1,6 +1,8 @@
 
 package dtu.ws.fastmoney;
 
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.util.List;
 import javax.jws.WebMethod;
@@ -22,6 +24,7 @@ import javax.xml.ws.ResponseWrapper;
 @XmlSeeAlso({
     ObjectFactory.class
 })
+@Component
 public interface BankService {
 
 
