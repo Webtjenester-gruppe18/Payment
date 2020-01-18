@@ -1,4 +1,4 @@
-package dtu.ws.rabbitmq;
+package dtu.ws.messagingutils;
 
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;

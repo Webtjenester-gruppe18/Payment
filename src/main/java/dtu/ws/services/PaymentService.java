@@ -6,9 +6,9 @@ import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
+import dtu.ws.messagingutils.RabbitMQValues;
 import dtu.ws.model.DTUPayTransaction;
 import dtu.ws.model.Token;
-import dtu.ws.rabbitmq.RabbitMQValues;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
@@ -33,7 +33,7 @@ public class PaymentService implements IPaymentService {
         try {
 
                 System.out.println("Hej fra Paymentservice " + fromAccountNumber);
-                rabbitTemplate.convertAndSend(RabbitMQValues.topicExchangeName,"token",
+                rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME,"token",
                         fromAccountNumber);
 
         } catch (AmqpConnectException e) {
