@@ -11,13 +11,14 @@ import dtu.ws.model.DTUPayTransaction;
 import dtu.ws.model.Token;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 
 
-
+@Service
 public class PaymentService implements IPaymentService {
 
     private BankService bankService; // = ControlReg.getFastMoneyBankService();
@@ -31,8 +32,6 @@ public class PaymentService implements IPaymentService {
     @Override
     public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
         try {
-
-                System.out.println("Hej fra Paymentservice " + fromAccountNumber);
                 rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME,"token",
                         fromAccountNumber);
 

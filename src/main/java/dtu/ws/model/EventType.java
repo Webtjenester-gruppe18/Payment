@@ -5,4 +5,5 @@ public enum EventType {
     REFUND_REQUEST,
     TOKEN_VALIDATION_REQUEST,
     TOKEN_REQUEST,
+    TOKEN_VALIDATED,
 }
