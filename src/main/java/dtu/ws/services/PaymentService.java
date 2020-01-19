@@ -5,14 +5,12 @@ import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
-import dtu.ws.messagingutils.RabbitMQValues;
 import dtu.ws.model.DTUPayTransaction;
-import dtu.ws.model.Event;
-import dtu.ws.model.EventType;
 import dtu.ws.model.Token;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -24,7 +22,7 @@ public class PaymentService implements IPaymentService {
     private ITransactionService transactionService;
 
     @Autowired
-    public PaymentService (RabbitTemplate rabbitTemplate, ITransactionService transactionService){
+    public PaymentService(RabbitTemplate rabbitTemplate, ITransactionService transactionService) {
         this.bankService = new BankServiceService().getBankServicePort();
         this.rabbitTemplate = rabbitTemplate;
         this.transactionService = transactionService;
