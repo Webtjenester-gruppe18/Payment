@@ -8,7 +8,6 @@ public abstract class DTUPayUser {
     private String firstName;
     private String lastName;
     private String cprNumber;
-    ArrayList<String> transactionIds;
 
     public DTUPayUser() {
     }
@@ -18,10 +17,6 @@ public abstract class DTUPayUser {
         this.firstName = firstName;
         this.lastName = lastName;
         this.cprNumber = cprNumber;
-
-        this.transactionIds = new ArrayList<>();
-
-        System.out.println("TEST " + this.transactionIds.size());
     }
 
     public String getAccountId() {
@@ -54,13 +49,5 @@ public abstract class DTUPayUser {
 
     public void setCprNumber(String cprNumber) {
         this.cprNumber = cprNumber;
-    }
-
-    public ArrayList<String> getTransactionIds() {
-        return transactionIds;
-    }
-
-    public void setTransactionIds(ArrayList<String> transactionIds) {
-        this.transactionIds = transactionIds;
     }
 }
