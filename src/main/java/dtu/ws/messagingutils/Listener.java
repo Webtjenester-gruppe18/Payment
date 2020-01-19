@@ -43,7 +43,7 @@ public class Listener {
                         paymentRequest.getDescription(),
                         paymentRequest.getToken());
             } catch (BankServiceException_Exception e) {
-                Event failureResponse = new Event(EventType.MONEY_TRANSFER_FAILED, e);
+                Event failureResponse = new Event(EventType.MONEY_TRANSFER_FAILED, e.getMessage());
                 this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, failureResponse);
                 return;
             }
