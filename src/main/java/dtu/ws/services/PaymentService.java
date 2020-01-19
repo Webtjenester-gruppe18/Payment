@@ -2,7 +2,6 @@ package dtu.ws.services;
 
 import dtu.ws.database.ITransactionDatabase;
 import dtu.ws.exception.NotEnoughMoneyException;
-import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
@@ -12,7 +11,6 @@ import dtu.ws.model.DTUPayTransaction;
 import dtu.ws.model.Event;
 import dtu.ws.model.EventType;
 import dtu.ws.model.Token;
-import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -43,8 +41,8 @@ public class PaymentService implements IPaymentService {
             this.saveTransaction(transaction);
 
         } catch (BankServiceException_Exception e) {
-            Event response = new Event(EventType.MONEY_TRANSFER_FAILED, e);
-            this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, response);
+            Event failureResponse = new Event(EventType.MONEY_TRANSFER_FAILED, e);
+            this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, failureResponse);
         }
 
         Event successResponse = new Event(EventType.MONEY_TRANSFER_SUCCEED, "Money transfer succeed");
@@ -111,6 +109,6 @@ public class PaymentService implements IPaymentService {
             return true;
         }
 
-        throw new NotEnoughMoneyException("You have not enough money.");
+        throw new NotEnoughMoneyException("You do not have enough money");
     }
 }
