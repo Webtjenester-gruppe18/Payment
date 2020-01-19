@@ -6,8 +6,11 @@ import dtu.ws.exception.TokenValidationException;
 import dtu.ws.fastmoney.Account;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
+import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.messagingutils.RabbitMQValues;
 import dtu.ws.model.DTUPayTransaction;
+import dtu.ws.model.Event;
+import dtu.ws.model.EventType;
 import dtu.ws.model.Token;
 import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -26,20 +29,26 @@ public class PaymentService implements IPaymentService {
     private RabbitTemplate rabbitTemplate;
 
     public PaymentService (RabbitTemplate rabbitTemplate){
+        this.bankService = new BankServiceService().getBankServicePort();
         this.rabbitTemplate = rabbitTemplate;
     }
 
     @Override
-    public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
+    public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) {
         try {
-                rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME,RabbitMQValues.TOKEN_SERVICE_ROUTING_KEY,
-                        fromAccountNumber);
+            this.bankService.transferMoneyFromTo(fromAccountNumber, toAccountNumber, amount, description);
 
-        } catch (AmqpConnectException e) {
-            // ignore - rabbit is not running
-        } catch (Exception e) {
-            e.printStackTrace();
+            // saving transaction at DTUPay
+            DTUPayTransaction transaction = new DTUPayTransaction(amount, fromAccountNumber, toAccountNumber, description, new Date().getTime(), token);
+            this.saveTransaction(transaction);
+
+        } catch (BankServiceException_Exception e) {
+            Event response = new Event(EventType.MONEY_TRANSFER_FAILED, e);
+            this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, response);
         }
+
+        Event successResponse = new Event(EventType.MONEY_TRANSFER_SUCCEED, "Money transfer succeed");
+        this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, successResponse);
     }
 
     @Override
