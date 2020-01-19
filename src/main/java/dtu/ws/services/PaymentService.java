@@ -32,7 +32,7 @@ public class PaymentService implements IPaymentService {
     @Override
     public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception, TokenValidationException, NotEnoughMoneyException {
         try {
-                rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME,"token",
+                rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME,RabbitMQValues.TOKEN_SERVICE_ROUTING_KEY,
                         fromAccountNumber);
 
         } catch (AmqpConnectException e) {
