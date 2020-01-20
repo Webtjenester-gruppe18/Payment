@@ -64,6 +64,23 @@ public class Listener {
                     RabbitMQValues.REPORTING_SERVICE_ROUTING_KEY,
                     responseEvent);
         }
+        else if (event.getType().equals(EventType.REFUND_REQUEST)) {
+
+            DTUPayTransaction transaction = this.mapper.convertValue(event.getObject(), DTUPayTransaction.class);
+
+            Event response;
+
+            try {
+                this.paymentService.performRefund(transaction);
+            } catch (BankServiceException_Exception e) {
+                response = new Event(EventType.REFUND_REQUEST_FAILURE_RESPONSE, e.getMessage());
+                this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, response);
+                return;
+            }
+
+            response = new Event(EventType.REFUND_REQUEST_SUCCESS_RESPONSE, "Refund succeed.");
+            this.rabbitTemplate.convertAndSend(RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.DTU_SERVICE_ROUTING_KEY, response);
+        }
     }
 
 }
