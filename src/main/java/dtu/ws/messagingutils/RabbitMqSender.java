@@ -8,9 +8,8 @@ import gherkin.deps.com.google.gson.Gson;
 import org.springframework.stereotype.Component;
 
 /**
- * @author Marcus August Christiansen - s175185
+ * 	Provided code from the instructor
  */
-
 @Component
 public class RabbitMqSender implements IEventSender {
 
