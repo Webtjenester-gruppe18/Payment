@@ -34,17 +34,23 @@ public class PaymentSteps {
         Event event = new Event();
         event.setType(EventType.valueOf(eventType));
 
-        paymentRequest = new PaymentRequest();
-        paymentRequest.setAmount(BigDecimal.valueOf(100));
-        paymentRequest.setCpr("1234");
-        paymentRequest.setDescription("Test");
-        paymentRequest.setFromAccountNumber("9876");
-        paymentRequest.setToAccountNumber("4567");
+        switch (event.getType()) {
+            case MONEY_TRANSFER_REQUEST:
+                paymentRequest = new PaymentRequest();
+                paymentRequest.setAmount(BigDecimal.valueOf(100));
+                paymentRequest.setCpr("1234");
+                paymentRequest.setDescription("Test");
+                paymentRequest.setFromAccountNumber("9876");
+                paymentRequest.setToAccountNumber("4567");
 
-        Token token = new Token("1234");
-        paymentRequest.setToken(token);
+                Token token = new Token("1234");
+                paymentRequest.setToken(token);
 
-        event.setObject(paymentRequest);
+                event.setObject(paymentRequest);
+                break;
+            case REQUEST_TRANSACTIONS:
+                event.setObject("123456789");
+        }
 
         this.eventReceiver.receiveEvent(event);
     }
@@ -70,6 +76,11 @@ public class PaymentSteps {
         ArgumentCaptor<Event> argumentCaptor = ArgumentCaptor.forClass(Event.class);
         verify(eventSender, atLeastOnce()).sendEvent(argumentCaptor.capture());
         assertEquals(EventType.valueOf(eventType), argumentCaptor.getValue().getType());
+    }
+
+    @Then("the transactions are retrieved")
+    public void theTransactionsAreRetrieved() {
+        // some code.
     }
 
 }
