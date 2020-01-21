@@ -46,12 +46,7 @@ public class EventManager implements IEventReceiver {
                 PaymentRequest paymentRequest = mapper.convertValue(event.getObject(), PaymentRequest.class);
 
                 try {
-                    this.paymentService.performPayment(
-                            paymentRequest.getFromAccountNumber(),
-                            paymentRequest.getToAccountNumber(),
-                            paymentRequest.getAmount(),
-                            paymentRequest.getDescription(),
-                            paymentRequest.getToken());
+                    this.paymentService.performPayment(paymentRequest);
                 } catch (BankServiceException_Exception e) {
                     Event failureResponse = new Event(EventType.MONEY_TRANSFER_FAILED, e.getMessage(), RabbitMQValues.DTU_SERVICE_ROUTING_KEY);
                     this.eventSender.sendEvent(failureResponse);
@@ -60,6 +55,22 @@ public class EventManager implements IEventReceiver {
 
                 Event successResponse = new Event(EventType.MONEY_TRANSFER_SUCCEED, "Money transfer succeed", RabbitMQValues.DTU_SERVICE_ROUTING_KEY);
                 this.eventSender.sendEvent(successResponse);
+                break;
+
+            case REFUND_REQUEST:
+                DTUPayTransaction transaction = mapper.convertValue(event.getObject(), DTUPayTransaction.class);
+
+                try {
+                    this.paymentService.performRefund(transaction);
+                } catch (BankServiceException_Exception e) {
+                    Event failureResponse = new Event(EventType.REFUND_FAILED, e.getMessage(), RabbitMQValues.DTU_SERVICE_ROUTING_KEY);
+                    this.eventSender.sendEvent(failureResponse);
+                    return;
+                }
+
+                Event success = new Event(EventType.REFUND_SUCCEED, "The refund succeed", RabbitMQValues.DTU_SERVICE_ROUTING_KEY);
+                this.eventSender.sendEvent(success);
+                break;
         }
     }
 }

@@ -6,6 +6,7 @@ import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.fastmoney.BankServiceService;
 import dtu.ws.model.DTUPayTransaction;
+import dtu.ws.model.PaymentRequest;
 import dtu.ws.model.Token;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +26,20 @@ public class PaymentService implements IPaymentService {
     }
 
     @Override
-    public void performPayment(String fromAccountNumber, String toAccountNumber, BigDecimal amount, String description, Token token) throws BankServiceException_Exception {
-        this.bankService.transferMoneyFromTo(fromAccountNumber, toAccountNumber, amount, description);
+    public void performPayment(PaymentRequest paymentRequest) throws BankServiceException_Exception {
+        this.bankService.transferMoneyFromTo(
+                paymentRequest.getFromAccountNumber(),
+                paymentRequest.getToAccountNumber(),
+                paymentRequest.getAmount(),
+                paymentRequest.getDescription());
 
         // saving transaction at DTUPay
-        DTUPayTransaction transaction = new DTUPayTransaction(amount, fromAccountNumber, toAccountNumber, description, new Date().getTime(), token);
+        DTUPayTransaction transaction = new DTUPayTransaction(
+                paymentRequest.getAmount(),
+                paymentRequest.getToAccountNumber(),
+                paymentRequest.getFromAccountNumber(), paymentRequest.getDescription(),
+                new Date().getTime(),
+                paymentRequest.getToken());
         this.transactionService.saveTransaction(transaction);
     }
 

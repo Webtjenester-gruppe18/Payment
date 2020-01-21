@@ -9,3 +9,8 @@ Feature: Payment features
     When the service receives the "REQUEST_TRANSACTIONS" event
     Then the transactions are retrieved
     And the "REQUEST_TRANSACTIONS_RESPONSE" is broadcast
+
+  Scenario: Request for refund
+    When the service receives the "REFUND_REQUEST" event
+    Then the money is refunded
+    And the "REFUND_SUCCEED" is broadcast

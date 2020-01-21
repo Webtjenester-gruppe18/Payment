@@ -1,18 +1,20 @@
 package ws18.Payment;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dtu.ws.database.ITransactionDatabase;
+import dtu.ws.database.InMemoryTransactionDatabase;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
 import dtu.ws.messagingutils.IEventReceiver;
 import dtu.ws.messagingutils.IEventSender;
-import dtu.ws.model.Event;
-import dtu.ws.model.EventType;
-import dtu.ws.model.PaymentRequest;
-import dtu.ws.model.Token;
+import dtu.ws.model.*;
 import dtu.ws.services.*;
 import io.cucumber.java.en.*;
 import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.atLeastOnce;
@@ -23,11 +25,13 @@ public class PaymentSteps {
 
     private IEventSender eventSender = mock(IEventSender.class);
     private BankService bankService = mock(BankService.class);
-    private IPaymentService paymentService = mock(PaymentService.class);
-    private ITransactionService transactionService = mock(TransactionService.class);
+    private ITransactionDatabase database = new InMemoryTransactionDatabase();
+    private ITransactionService transactionService = new TransactionService(database);
+    private IPaymentService paymentService = new PaymentService(transactionService, bankService);
     private IEventReceiver eventReceiver = new EventManager(eventSender, paymentService, transactionService);
 
     private PaymentRequest paymentRequest;
+    private DTUPayTransaction transaction;
 
     @When("the service receives the {string} event")
     public void theServiceReceivesTheEvent(String eventType) throws Exception {
@@ -50,6 +54,11 @@ public class PaymentSteps {
                 break;
             case REQUEST_TRANSACTIONS:
                 event.setObject("123456789");
+                break;
+            case REFUND_REQUEST:
+                transaction = new DTUPayTransaction(BigDecimal.ONE, "9876", "4567", "TEST", new Date().getTime(), new Token());
+                event.setObject(transaction);
+                break;
         }
 
         this.eventReceiver.receiveEvent(event);
@@ -57,18 +66,20 @@ public class PaymentSteps {
 
     @Then("the money is transferred")
     public void theMoneyIsTransferred() throws BankServiceException_Exception {
-//        verify(paymentService).performPayment(
-//                paymentRequest.getFromAccountNumber(),
-//                paymentRequest.getToAccountNumber(),
-//                paymentRequest.getAmount(),
-//                paymentRequest.getDescription(),
-//                paymentRequest.getToken());
+        verify(bankService).transferMoneyFromTo(
+                paymentRequest.getFromAccountNumber(),
+                paymentRequest.getToAccountNumber(),
+                paymentRequest.getAmount(),
+                paymentRequest.getDescription());
+    }
 
-//        verify(bankService).transferMoneyFromTo(
-//                paymentRequest.getFromAccountNumber(),
-//                paymentRequest.getToAccountNumber(),
-//                paymentRequest.getAmount(),
-//                paymentRequest.getDescription());
+    @Then("the money is refunded")
+    public void theMoneyIsRefunded() throws BankServiceException_Exception {
+        verify(bankService).transferMoneyFromTo(
+                transaction.getDebtor(),
+                transaction.getCreditor(),
+                transaction.getAmount(),
+                transaction.getDescription());
     }
 
     @Then("the {string} is broadcast")
@@ -80,7 +91,8 @@ public class PaymentSteps {
 
     @Then("the transactions are retrieved")
     public void theTransactionsAreRetrieved() {
-        // some code.
+        ArrayList<DTUPayTransaction> transactions = this.transactionService.getTransactionsByAccountId("123456789");
+        assertEquals(0 , transactions.size());
     }
 
 }
