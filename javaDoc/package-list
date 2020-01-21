@@ -1,0 +1,10 @@
+
+dtu.ws
+dtu.ws.control
+dtu.ws.database
+dtu.ws.exception
+dtu.ws.fastmoney
+dtu.ws.messagingutils
+dtu.ws.model
+dtu.ws.services
+ws18.Payment
