@@ -1,9 +1,16 @@
 Feature: Payment features
 
-  Scenario: Customer pays merchant
-    Given a customer that is registered in DTUPay with a bank account
-    And the customer has at least one unused token
-    And a merchant that is registered in DTUPay with a bank account
-    When the customer pays 100 kr to the merchant
-    Then the transaction succeed
-    And the money is transferred
+  Scenario: perform payment
+    When the service receives the "MONEY_TRANSFER_REQUEST" event
+    Then the money is transferred
+    And the "MONEY_TRANSFER_SUCCEED" is broadcast
+
+  Scenario: Request for transactions
+    When the service receives the "REQUEST_TRANSACTIONS" event
+    Then the transactions are retrieved
+    And the "REQUEST_TRANSACTIONS_RESPONSE" is broadcast
+
+  Scenario: Request for refund
+    When the service receives the "REFUND_REQUEST" event
+    Then the money is refunded
+    And the "REFUND_SUCCEED" is broadcast

@@ -1,85 +1,98 @@
 package ws18.Payment;
 
-import dtu.ws.HTTPClients.TokenManagerHTTPClient;
-import dtu.ws.HTTPClients.UserManagerHTTPClient;
-import dtu.ws.control.ControlReg;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import dtu.ws.database.ITransactionDatabase;
+import dtu.ws.database.InMemoryTransactionDatabase;
 import dtu.ws.fastmoney.BankService;
 import dtu.ws.fastmoney.BankServiceException_Exception;
-import dtu.ws.fastmoney.User;
-import dtu.ws.model.Customer;
-import dtu.ws.model.Token;
-import io.cucumber.java.Before;
+import dtu.ws.messagingutils.IEventReceiver;
+import dtu.ws.messagingutils.IEventSender;
+import dtu.ws.model.*;
+import dtu.ws.services.*;
 import io.cucumber.java.en.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.web.client.match.ContentRequestMatchers;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class PaymentSteps {
 
-    private BankService bankService;
-    private Customer currentCustomer;
-    private UserManagerHTTPClient userManager;
-    private TokenManagerHTTPClient tokenManager;
+    private IEventSender eventSender = mock(IEventSender.class);
+    private BankService bankService = mock(BankService.class);
+    private ITransactionDatabase database = new InMemoryTransactionDatabase();
+    private ITransactionService transactionService = new TransactionService(database);
+    private IPaymentService paymentService = new PaymentService(transactionService, bankService);
+    private IEventReceiver eventReceiver = new EventManager(eventSender, paymentService, transactionService);
 
-    @Before
-    public void setUp() {
-        this.bankService = ControlReg.getFastMoneyBankService();
-        this.userManager = new UserManagerHTTPClient();
-        this.tokenManager = new TokenManagerHTTPClient();
-    }
+    private PaymentRequest paymentRequest;
+    private DTUPayTransaction transaction;
 
-    @Given("a customer that is registered in DTUPay with a bank account")
-    public void aCustomerThatIsRegisteredInDTUPayWithABankAccount() {
-        User customer = new User();
-        customer.setCprNumber("23675");
-        customer.setFirstName("Frederik");
-        customer.setLastName("Hjort");
+    @When("the service receives the {string} event")
+    public void theServiceReceivesTheEvent(String eventType) throws Exception {
+        Event event = new Event();
+        event.setType(EventType.valueOf(eventType));
 
-        String accountId = "";
-        try {
-            accountId = this.bankService.createAccountWithBalance(customer, BigDecimal.valueOf(1000));
-        } catch (BankServiceException_Exception e) {
-            System.out.println("NOGET GIK GALT");
+        switch (event.getType()) {
+            case MONEY_TRANSFER_REQUEST:
+                paymentRequest = new PaymentRequest();
+                paymentRequest.setAmount(BigDecimal.valueOf(100));
+                paymentRequest.setCpr("1234");
+                paymentRequest.setDescription("Test");
+                paymentRequest.setFromAccountNumber("9876");
+                paymentRequest.setToAccountNumber("4567");
+
+                Token token = new Token("1234");
+                paymentRequest.setToken(token);
+
+                event.setObject(paymentRequest);
+                break;
+            case REQUEST_TRANSACTIONS:
+                event.setObject("123456789");
+                break;
+            case REFUND_REQUEST:
+                transaction = new DTUPayTransaction(BigDecimal.ONE, "9876", "4567", "TEST", new Date().getTime(), new Token());
+                event.setObject(transaction);
+                break;
         }
 
-        this.currentCustomer = new Customer(
-                accountId,
-                customer.getFirstName(),
-                customer.getLastName(),
-                customer.getCprNumber());
-
-        this.userManager.registerCustomer(this.currentCustomer);
-    }
-
-    @Given("the customer has at least one unused token")
-    public void theCustomerHasAtLeastOneUnusedToken() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Given("a merchant that is registered in DTUPay with a bank account")
-    public void aMerchantThatIsRegisteredInDTUPayWithABankAccount() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @When("the customer pays {int} kr to the merchant")
-    public void theCustomerPaysKrToTheMerchant(Integer int1) {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
-    }
-
-    @Then("the transaction succeed")
-    public void theTransactionSucceed() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+        this.eventReceiver.receiveEvent(event);
     }
 
     @Then("the money is transferred")
-    public void theMoneyIsTransferred() {
-        // Write code here that turns the phrase above into concrete actions
-        throw new cucumber.api.PendingException();
+    public void theMoneyIsTransferred() throws BankServiceException_Exception {
+        verify(bankService).transferMoneyFromTo(
+                paymentRequest.getFromAccountNumber(),
+                paymentRequest.getToAccountNumber(),
+                paymentRequest.getAmount(),
+                paymentRequest.getDescription());
     }
+
+    @Then("the money is refunded")
+    public void theMoneyIsRefunded() throws BankServiceException_Exception {
+        verify(bankService).transferMoneyFromTo(
+                transaction.getDebtor(),
+                transaction.getCreditor(),
+                transaction.getAmount(),
+                transaction.getDescription());
+    }
+
+    @Then("the {string} is broadcast")
+    public void theIsBroadcast(String eventType) throws Exception {
+        ArgumentCaptor<Event> argumentCaptor = ArgumentCaptor.forClass(Event.class);
+        verify(eventSender, atLeastOnce()).sendEvent(argumentCaptor.capture());
+        assertEquals(EventType.valueOf(eventType), argumentCaptor.getValue().getType());
+    }
+
+    @Then("the transactions are retrieved")
+    public void theTransactionsAreRetrieved() {
+        ArrayList<DTUPayTransaction> transactions = this.transactionService.getTransactionsByAccountId("123456789");
+        assertEquals(0 , transactions.size());
+    }
+
 }
