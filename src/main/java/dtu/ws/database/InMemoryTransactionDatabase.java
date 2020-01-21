@@ -6,6 +6,10 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 @Component
 public class InMemoryTransactionDatabase implements ITransactionDatabase {
 

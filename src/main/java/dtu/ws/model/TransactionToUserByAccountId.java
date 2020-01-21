@@ -8,6 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public class TransactionToUserByAccountId {
 
     private String accountId;

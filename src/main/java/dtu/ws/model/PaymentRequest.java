@@ -7,6 +7,10 @@ import lombok.Setter;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 @Getter
 @Setter
 @NoArgsConstructor

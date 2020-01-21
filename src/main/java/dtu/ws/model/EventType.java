@@ -1,5 +1,9 @@
 package dtu.ws.model;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public enum EventType {
     REFUND_REQUEST,
     REFUND_FAILED,

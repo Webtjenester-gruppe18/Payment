@@ -8,6 +8,11 @@ import java.util.UUID;
 
 @Getter
 @Setter
+
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public class Token implements Serializable {
 
     private String value;

@@ -6,6 +6,10 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 @Getter
 @Setter
 @NoArgsConstructor

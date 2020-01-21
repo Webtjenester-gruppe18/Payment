@@ -10,6 +10,10 @@ import dtu.ws.model.Token;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public interface IPaymentService {
 
     void performPayment(PaymentRequest paymentRequest) throws dtu.ws.fastmoney.BankServiceException_Exception;

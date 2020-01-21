@@ -15,6 +15,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Date;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public class PaymentService implements IPaymentService {
 
     private BankService bankService;

@@ -7,6 +7,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 @Service
 public class TransactionService implements ITransactionService {
 

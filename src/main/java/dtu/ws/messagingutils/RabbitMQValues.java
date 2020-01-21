@@ -1,5 +1,9 @@
 package dtu.ws.messagingutils;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public class RabbitMQValues {
     public static final String TOPIC_EXCHANGE_NAME = "dtupay-eventsExchange";
     public static final String DTU_SERVICE_ROUTING_KEY = "dtupay";

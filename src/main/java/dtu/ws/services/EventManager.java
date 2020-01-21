@@ -12,6 +12,10 @@ import dtu.ws.model.PaymentRequest;
 
 import java.util.ArrayList;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public class EventManager implements IEventReceiver {
 
     private IEventSender eventSender;

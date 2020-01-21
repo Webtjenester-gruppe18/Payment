@@ -7,6 +7,10 @@ import dtu.ws.model.Event;
 import gherkin.deps.com.google.gson.Gson;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 @Component
 public class RabbitMqSender implements IEventSender {
 

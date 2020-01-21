@@ -2,6 +2,10 @@ package dtu.ws.model;
 
 import java.util.ArrayList;
 
+/**
+ * @author Marcus August Christiansen - s175185
+ */
+
 public abstract class DTUPayUser {
 
     private String accountId;
