@@ -18,6 +18,7 @@ public class EventReceiverImpl {
 
     public void listen() throws Exception {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setHost("rabbitmq");
         Connection connection = factory.newConnection();
         Channel channel = connection.createChannel();
         channel.queueBind(RabbitMQValues.PAYMENT_SERVICE_QUEUE_NAME, RabbitMQValues.TOPIC_EXCHANGE_NAME, RabbitMQValues.PAYMENT_SERVICE_ROUTING_KEY); //Change Queuename and routing key

@@ -21,7 +21,7 @@ public class EventSenderImpl implements IEventSender {
 
     private RabbitTemplate getRabbitTemplate() {
         CachingConnectionFactory connectionFactory =
-                new CachingConnectionFactory("localhost");
+                new CachingConnectionFactory("rabbitmq");
         connectionFactory.setUsername("guest");
         connectionFactory.setPassword("guest");
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
