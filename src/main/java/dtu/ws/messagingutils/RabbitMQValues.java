@@ -9,5 +9,5 @@ public class RabbitMQValues {
     public static final String USER_SERVICE_ROUTING_KEY = "user";
     public static final String REPORTING_SERVICE_ROUTING_KEY = "reporting";
 
-    public static final String HOST_NAME = "rabbitmq";
+    public static final String HOST_NAME = "systemtestsmaster_rabbitmq_1";
 }
