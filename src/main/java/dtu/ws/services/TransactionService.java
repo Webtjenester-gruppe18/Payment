@@ -1,7 +1,10 @@
 package dtu.ws.services;
 
 import dtu.ws.database.ITransactionDatabase;
+import dtu.ws.messagingutils.IEventReceiver;
+import dtu.ws.messagingutils.IEventSender;
 import dtu.ws.model.DTUPayTransaction;
+import dtu.ws.model.Event;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

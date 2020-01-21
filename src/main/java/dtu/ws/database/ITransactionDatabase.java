@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 
-@Component
 public interface ITransactionDatabase {
     DTUPayTransaction getTransactionById(String transactionId);
     ArrayList<DTUPayTransaction> getTransactionsByAccountId(String accountId);

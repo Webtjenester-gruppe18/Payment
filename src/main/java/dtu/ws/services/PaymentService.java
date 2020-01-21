@@ -14,17 +14,13 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.Date;
 
-@Service
 public class PaymentService implements IPaymentService {
 
     private BankService bankService;
-    private RabbitTemplate rabbitTemplate;
     private ITransactionService transactionService;
 
-    @Autowired
-    public PaymentService(RabbitTemplate rabbitTemplate, ITransactionService transactionService) {
-        this.bankService = new BankServiceService().getBankServicePort();
-        this.rabbitTemplate = rabbitTemplate;
+    public PaymentService(ITransactionService transactionService, BankService bankService) {
+        this.bankService = bankService;
         this.transactionService = transactionService;
     }
 
